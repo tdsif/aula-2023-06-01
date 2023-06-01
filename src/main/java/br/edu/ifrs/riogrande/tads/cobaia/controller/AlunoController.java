@@ -3,6 +3,7 @@ package br.edu.ifrs.riogrande.tads.cobaia.controller;
 import static java.util.Objects.requireNonNull;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,14 +57,32 @@ public class AlunoController {
 
 
   @GetMapping
-  public Iterable<AlunoDTO> getAlunos() {
-    return alunoService.getAlunos();
+  public List<AlunoDTO> getAlunos() {
+    return alunoService.getAlunosOrderByNome();
+  }
+
+  @PutMapping //api/v1/alunos
+  public ResponseEntity<List<Long>> atualizar(@RequestBody List<AlunoDTO> dtos) {
+
+    List<Long> idsFalharam = alunoService.atualizarEmLote(dtos);
+
+    return ResponseEntity.ok().body(idsFalharam);
+  }
+
+  @PutMapping("/{id}") //alunos/1
+  public ResponseEntity<?> atualizar(
+    @PathVariable("id") Long id,
+    @RequestBody AlunoDTO dto) {
+
+    alunoService.atualizar(id, dto);
+
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/{id}") // ex.: /alunos?id=1 (? query param) ou /alunos/1 (recurso com uma identidade)
-  public ResponseEntity<Aluno> getAluno(@PathVariable("id") Long id) {
+  public ResponseEntity<AlunoDTO> getAluno(@PathVariable("id") Long id) {
 
-    Optional<Aluno> aluno = alunoService.findById(
+    Optional<AlunoDTO> aluno = alunoService.findById(
       requireNonNull(id, "O id é obrigatório"));
 
     if (aluno.isPresent()) {

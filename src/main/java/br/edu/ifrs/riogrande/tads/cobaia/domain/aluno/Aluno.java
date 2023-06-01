@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "alunos")
 // sem visibilidade: privado do pacote
-class Aluno { // Java Bean
+public class Aluno { // Java Bean
   
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY) // sequencial

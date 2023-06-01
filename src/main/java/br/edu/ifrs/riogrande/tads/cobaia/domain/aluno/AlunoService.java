@@ -25,23 +25,40 @@ import lombok.RequiredArgsConstructor;
 public class AlunoService {
 
   private final AlunoRepository alunoRepository;
-  private final ObjectMapper objectMapper;
 
+  private AlunoDTO toDTO(Aluno a) {
+    return AlunoDTO.builder()
+          .id(a.getId())
+          .nome(a.getNome())
+          .email(a.getEmail())
+          .build();
+  }
 
+  @Deprecated(since = "jun/2023", forRemoval = true)
   public List<AlunoDTO> getAlunos() {
     final boolean isParallel = false;
     return StreamSupport
       .stream(alunoRepository.findAll().spliterator(), isParallel)
-        .map(a -> AlunoDTO.builder()
-          .id(a.getId())
-          .nome(a.getNome())
-          .email(a.getEmail())
-          .build())
+        //.map(aluno -> Mapper.toDTO(aluno))
+        //.map(Mapper::toDTO) // método como referência
+        //.map(aluno -> this.toDTO(aluno))
+        .map(this::toDTO)
       .toList();
   }
 
-  public Optional<Aluno> findById(@NonNull Long id) {
-    return alunoRepository.findById(id);
+  public List<AlunoDTO> getAlunosOrderByNome() {
+    return alunoRepository.findAll().stream()
+        .map(a -> AlunoDTO.builder()
+            .id(a.getId())
+            .nome(a.getNome())
+            .email(a.getEmail())
+            .build())
+        .toList(); 
+  }
+
+  public Optional<AlunoDTO> findById(@NonNull Long id) {
+    return alunoRepository.findById(id)
+      .flatMap(aluno -> Optional.of(toDTO(aluno)));
   }
 
   // garantia de não-nulidade
@@ -81,5 +98,31 @@ public class AlunoService {
     System.out.println("Aluno salvo " + a.getId());
 
     System.out.println(alunoRepository.findAll());
+  }
+
+	public void atualizar(Long id, AlunoDTO dto) {
+
+    Aluno aluno = alunoRepository.findById(id)
+      .orElseThrow(() -> new IllegalStateException("Aluno não encontrado"));
+
+    aluno.setNome(dto.getNome());
+    aluno.setEmail(dto.getEmail());
+
+    alunoRepository.save(aluno);
+
+	}
+
+  public List<Long> atualizarEmLote(List<AlunoDTO> dtos) {
+    List<Long> ids = new ArrayList<>();
+
+    dtos.forEach(dto -> {
+      try {
+        atualizar(dto.getId(), dto);
+      } catch (IllegalStateException e) {
+        ids.add(dto.getId());
+      }
+    });
+
+    return ids;
   }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ import lombok.Data;
 // Modelo tanto para o tráfego, quanto validação
 @Data
 @Builder
+@AllArgsConstructor
 public class AlunoDTO {
 
   private Long id;
@@ -31,4 +33,5 @@ public class AlunoDTO {
   // private String matricula;
 
   // Sem length considera 255
+
 }
